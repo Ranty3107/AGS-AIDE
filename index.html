@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent de Catégorisation de Courriels</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-light">
+
+    <div class="container py-4">
+        <header class="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center sticky-header bg-light">
+            <div class="d-flex align-items-center gap-3">
+                <span class="fs-4 fw-bold text-primary">AIDE POUR AGS <small class="fs-6 text-muted">v1.0</small></span>
+                <button class="btn btn-warning btn-sm fw-bold shadow-sm" type="button" data-bs-toggle="modal" data-bs-target="#modalLexique">
+                    📚 Voir consignes
+                </button>
+            </div>
+            <span class="badge bg-secondary text-wrap style-badge-top">* Fanampiana ihany ity fa tsy tompon'andraikitra aho raha misy diso</span>
+        </header>
+
+        <div class="row g-4 main-content-section">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-primary text-white fw-bold">
+                        📥 Analyse du Courriel
+                    </div>
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div class="mb-3">
+                            <div class="alert alert-warning py-2 mb-3 shadow-sm dynamic-note" style="font-size: 0.8rem;">
+                                <strong>ℹ️ Note importante :</strong> Si l'expéditeur et le récepteur du mail est <strong>AGC-CNG</strong>, le type est automatiquement fixé sur <strong>ÉCHANGES INTERNES</strong> (AVANT TOUT CA : IL FAUT RECHERCHER le nom mentionné dans le mail).
+                            </div>
+                            <label for="mailSubject" class="form-label fw-semibold">Objet du mail :</label>
+                            <input type="text" id="mailSubject" class="form-control" placeholder="Copier-coller l'objet ici..." autocomplete="off">
+                        </div>
+                        <div class="mb-3">
+                            <label for="mailContent" class="form-label fw-semibold">Extrait / Contenu du mail :</label>
+                            <textarea id="mailContent" class="form-control" rows="5" placeholder="Copier les phrases clés ou le corps du message..."></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary w-100 fw-bold" onclick="analyserMail()">ANALYSER LE MAIL</button>
+                            <button class="btn btn-outline-secondary" onclick="reinitialiser()">EFFACER</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between align-items-center">
+                        <span>🎯 Propositions de Catégorisation</span>
+                        <span class="badge bg-primary" id="confidenceBadge" style="display: none;">Confiance Élevée</span>
+                    </div>
+                    <div class="card-body d-flex flex-column justify-content-center position-relative" style="min-height: 290px;">
+                        <div id="resultPlaceholder" class="text-center text-muted py-4">
+                            <p class="fs-1 mb-2">🔍</p>
+                            <p class="mb-0">Saisissez des données à gauche et cliquez sur "Analyser" pour voir les suggestions de catégories.</p>
+                        </div>
+
+                        <div id="suggestionsList" style="display: none; max-height: 260px; overflow-y: auto; padding-right: 5px;">
+                            <label class="form-label fw-semibold text-secondary mb-2">Types correspondants détectés (classés par pertinence) :</label>
+                            <div id="categoriesContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light fw-bold text-secondary" style="font-size: 0.85rem;">
+                        📋 LISTE DES TYPES DE MAILS PRIS EN CHARGE
+                    </div>
+                    <div class="card-body py-2 px-3">
+                        <div class="row" id="memoCategories" style="font-size: 0.78rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalLexique" tabindex="-1" aria-labelledby="modalLexiqueLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title fw-bold" id="modalLexiqueLabel">🇲🇬 Dictionnaire & Processus de Recouvrement</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-close="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0 align-middle" style="font-size: 0.85rem;">
+                            <thead class="table-dark sticky-table-header">
+                                <tr>
+                                    <th style="width: 25%">Français</th>
+                                    <th style="width: 30%">Malagasy</th>
+                                    <th style="width: 45%">Explication</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Titre exécutoire</td>
+                                    <td>Taratasy manan-kery ara-pitsarana ho fampiharana fanerena</td>
+                                    <td class="text-muted">Taratasy ofisialy manome fahefana ny fitondram-panjakana na ny mpampindram-bola hanatanteraka fanerena ara-dalàna raha tsy voaloa ny trosa.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Lettre de relance</td>
+                                    <td>Taratasy fampahatsiahivana</td>
+                                    <td class="text-muted">Taratasy alefa hampahatsiahy olona iray fa mbola misy vola na adidy tsy voaloa na tsy tontosa.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Mise en demeure</td>
+                                    <td>Fampitandremana ofisialy farany</td>
+                                    <td class="text-muted">Taratasy ara-dalàna manery ny olona hanefa ny adidiny ao anatin'ny fe-potoana voafaritra.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Délai de règlement (...)</td>
+                                    <td>Fe-potoana fandoavana (fangatahana fandaharam-pandoavana, échelonnement)</td>
+                                    <td class="text-muted">Momba ny fangatahana na fanekena handoa trosa amin'ny ampahany maromaro sy amin'ny daty voafaritra.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Recours gracieux</td>
+                                    <td>Fangatahana famerenana hijery fanapahan-kevitra amin-katsaram-panahy</td>
+                                    <td class="text-muted">Fangatahana atao amin'ilay manampahefana nandray fanapahan-kevitra mba handinika indray izany nefa tsy mbola manatona fitsarana.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Recours hiérarchique</td>
+                                    <td>Fitoriana amin'ny ambaratongam-pahefana ambony</td>
+                                    <td class="text-muted">Raha tsy afa-po amin'ny fanapahan-kevitry ny tompon'andraikitra iray dia afaka mangataka amin'ny lehibeny ambony kokoa.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Recours TA</td>
+                                    <td>Fitoriana eny amin'ny Fitsarana Misahana ny Raharaham-panjakana</td>
+                                    <td class="text-muted">Dingana ara-pitsarana atao eo anatrehan'ny Tribunal Administratif mba hanohitra fanapahan-kevitra ara-panjakana.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">SATD / ATD</td>
+                                    <td>Fakana vola amin'ny alalan'ny antoko fahatelo mitahiry vola</td>
+                                    <td class="text-muted">Fepetra ahafahan'ny fitondram-panjakana maka mivantana vola amin'ny kaonty banky na amin'ny olona mitazona vola ho an'ilay mpitrosa.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Surendettement</td>
+                                    <td>Taratasy momba ny trosa mihoapampana avy amin'ny Banque de France</td>
+                                    <td class="text-muted">Taratasy mifandraika amin'ny fangatahana na fanaraha-maso ny raharaha surendettement miaraka amin'ny Banque de France.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Attestation annuelle</td>
+                                    <td>Fanamarinana fandoavana</td>
+                                    <td class="text-muted">Taratasy manamarina fa nisy vola voaloa na adidy ara-bola efa notanterahina tamina taona iray.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Autres</td>
+                                    <td>Hafa (fangatahana antontan-taratasy fanamarinana na zavatra hafa)</td>
+                                    <td class="text-muted">Sokajy ampiasaina ho an'ny taratasy rehetra tsy tafiditra amin'ireo sokajy etsy ambony.</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Échanges internes</td>
+                                    <td>Fifandraisana anatiny</td>
+                                    <td class="text-muted">Resaka na mailaka ifanaovan'ny sampan-draharaha anatiny fotsiny, tsy misy fiantraikany mivantana amin'ny dossier.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="bg-light p-3 border-top" style="font-size: 0.8rem;">
+                        <h6 class="fw-bold text-dark mb-2">📋 Filaharan'ny dingana amin'ny fanangonana trosa :</h6>
+                        <p class="mb-0">
+                            <strong>1. Lettre de relance</strong> ➔ <strong>2. Mise en demeure</strong> ➔ <strong>3. Titre exécutoire</strong> ➔ <strong>4. SATD / ATD</strong>.</p>
+                            <h6><strong>Mandritra izany fotoana izany dia afaka manao:</strong></h6>
+                            <ul>
+<li>Recours gracieux (fangatahana famerenana hijery ny fanapahan-kevitra),</li>
+<li>Recours hiérarchique (fangatahana amin'ny lehiben'ny manampahefana),</li>
+<li>Recours TA (fitoriana eny amin'ny Fitsarana Misahana ny Raharaham-panjakana).</li>
+</ul>
+<ul>Ary raha manana olana ara-bola lehibe ilay olona dia mety hiditra amin'ny:
+<li>Délai de règlement / échelonnement (fandoavana miandalana),</li>
+<li>na Surendettement (fikarakarana trosa mihoapampana).</li>
+</ul>
+
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary fw-bold btn-sm" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
