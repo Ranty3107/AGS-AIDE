@@ -84,3 +84,28 @@ body {
     z-index: 10;
 }
 h6{margin-top: 20px;}
+.excel{font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    text-align: center;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding-bottom: auto;
+border-radius: 50px;
+object-fit: cover;
+background-color: aquamarine;
+}
+.colonne{display: flex;
+    gap: 30px;
+
+}
+.colonne > div{flex: 1;
+
+}
+.NB{background-color:#0d6efd;
+    border-radius: 10px;
+    text-align: justify;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: medium;
+    margin-top: 40PX;
+    margin-right: 20px;
+
+}

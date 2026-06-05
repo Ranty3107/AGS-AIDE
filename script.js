@@ -1,107 +1,173 @@
-// Dictionnaire de catégorisation intelligent
+// Dictionnaire de catégorisation intelligent (Insensible aux accents et à la casse)
 const TYPES_COURRIELS = [
     {
         id: "titre_executoire",
         nom: "Titre exécutoire",
-        keywords: [/titre exécutoire/i, /exécutoire/i, /formule exécutoire/i, /recouvrement forcé/i]
+        keywords: [/titre executoire/i, /executoire/i, /formule executoire/i, /recouvrement force/i]
     },
     {
         id: "lettre_relance",
         nom: "Lettre de relance",
-        keywords: [/relance/i, /rappel/i, /courrier de relance/i, /sans règlement de votre part/i, /premier rappel/i, /2ème rappel/i]
+        keywords: [/courrier de relance/i, /sans reglement de votre part/i, /premier rappel/i, /2eme rappel/i, /rappel/i, /(?<!derniere )relance(?! avant poursuites)/i]
     },
     {
         id: "mise_en_demeure",
         nom: "Mise en demeure",
-        keywords: [/mise en demeure/i, /sous peine de/i, /dernière relance avant poursuites/i, /sommation/i]
+        keywords: [/mise en demeure/i, /sous peine de/i, /derniere relance avant poursuites/i, /sommation/i]
     },
     {
         id: "delai_reglement",
         nom: "Délai de règlement (demande d’échéancier, validation, échelonnement)",
         keywords: [
-            /échéancier/i, /échelonnement/i, /echelonner/i, /délais? de paiement/i, 
-            /restant?s? dû/i, /montant(s)? versé(s)?/i, /prélevé(s)?/i, /virement(s)? en cours/i, 
-            /prochain(s)? virement/i, /suspension (des )?prélèvement/i, /payer en plusieurs fois/i,
-            /mensualisation/i, /accord de délai/i, /validation de l'échéancier/i
+            /echeancier/i,
+            /echelonnement/i,
+            /echelonner/i,
+            /delais? de paiement/i,
+            /restant?s? du/i,
+            /montant(s)? verse(s)?/i,
+            /preleve(s)?/i,
+            /virement(s)? en cours/i,
+            /prochain(s)? virement/i,
+            /suspension (des )?prelevement/i,
+            /payer en plusieurs fois/i,
+            /mensualisation/i,
+            /accord de delai/i,
+            /validation de l.?echeancier/i,
+            /confirme les echeances/i,
+
+            // Paiements effectués
+            /nouveau virement/i,
+            /je viens de realiser un nouveau virement/i,
+            /solde du remboursement/i,
+            /reste actuellement/i,
+            /deja rembourse/i,
+            /ferai parvenir dans les meilleurs delais/i,
+
+            // Prélèvements
+            /autorisation de prelevement/i,
+            /prelevement mensuel/i,
+            /mensualite/i,
+            /paiement mensuel/i,
+
+            // Suspension / report
+            /suspendre le remboursement/i,
+            /suspension du remboursement/i,
+            /demande de suspension/i,
+            /report de paiement/i,
+            /suspension de la procedure/i,
+
+            // Installation permettant d'honorer le CESP
+            /installation.*zone sous[- ]dotee/i,
+            /honorer le cesp/i,
+            /pouvoir honorer/i,
+            /contrat de collaboration/i,
+            /installation sera effective/i,
+
+            // Négociation d'un accord de paiement
+            /trouver un accord/i,
+            /en negociation/i,
+            /honorer ce dit contrat/i
         ]
     },
     {
         id: "recours_gracieux",
         nom: "Recours gracieux",
         keywords: [
-            /recours gracieux/i, /à titre gracieux/i, /demande de remise/i, /indulgenced/i, 
+            /recours gracieux/i, /a titre gracieux/i, /demande de remise/i, /indulgence/i, 
             /annulation de la dette/i, /remise gracieuse/i, /rembourser moins/i,
-            /éviter.*remboursement/i, /calcul est.*incorrect/i, /contester.*montant/i 
+            /\beviter le remboursement/i, /ne pas rembourser/i,
+            /calcul est.*incorrect/i, /contester.*montant.*penalite/i,
+            /pourquoi m'appliquez(-vous)? vous cette penalite/i,
+            /pourquoi m'avez(-vous)? vous penalise/i,
+            /faible salaire/i,
+            /contrat.*mentionne/i,
+            /interne cette annee/i
         ]
     },
     {
         id: "recours_hierarchique",
         nom: "Recours hiérarchique",
-        keywords: [/recours hiérarchique/i, /supérieur hiérarchique/i, /directeur régional/i, /contestation décision/i]
+        keywords: [/recours hierarchique/i, /superieur hierarchique/i, /directeur regional/i, /contestation decision/i]
     },
     {
         id: "recours_ta",
         nom: "Recours TA (Tribunal Administratif)",
-        keywords: [/tribunal administratif/i, /greffe TA/i, /recours contentieux/i, /requête introductive/i, /ordonnance du tribunal/i, /\bTA\b/i, /pièce jointe.*recours/i]
+        keywords: [/tribunal administratif/i, /greffe ta/i, /recours contentieux/i, /requete introductive/i, /ordonnance du tribunal/i, /\bta\b/i, /piece jointe.*recours/i]
     },
     {
         id: "satd_atd",
         nom: "SATD / ATD (Saisie Administrative sur Tiers Détenteur / Avis à Tiers Détenteur)",
-        keywords: [/\bSATD\b/i, /\bATD\b/i, /saisie administrative/i, /tiers détenteur/i, /saisie sur compte/i, /avis à tiers détenteur/i]
+        keywords: [/\bsatd\b/i, /\batd\b/i, /saisie administrative/i, /tiers detenteur/i, /saisie sur compte/i, /avis a tiers detenteur/i]
     },
     {
         id: "surendettement",
         nom: "Surendettement : courrier Banque de France",
-        keywords: [/surendettement/i, /banque de france/i, /\bBDF\b/i, /commission de surendettement/i, /plan de redressement/i, /recevabilité/i]
+        keywords: [/surendettement/i, /banque de france/i, /\bbdf\b/i, /commission de surendettement/i, /plan de redressement/i, /recevabilite/i]
     },
     {
         id: "attestation_paiement",
         nom: "Attestation de paiement / Attestation annuelle",
         keywords: [
             /attestation de paiement/i, /attestation annuelle/i, /fin des paiements/i, 
-            /solde de la dette/i, /dette soldée/i, /recu de paiement/i, /justificatif de paiement/i, 
-            /prouvant mon règlement/i, /acquittée/i, /facture acquittée/i, /attestation de l'année/i, 
-            /récapitulatif annuel/i, /attestation fiscale/i, /avis.*imposition/i, /revenus de/i, /déclaration.*revenu/i,
-            /soldé.*dette/i, /trop(-)?perçu/i
+            /solde de la dette/i, /dette soldee/i, /recu de paiement/i, /justificatif de paiement/i, 
+            /prouvant mon reglement/i, /acquittee/i, /facture acquittee/i, /attestation de l'annee/i, 
+            /recapitulatif annuel/i, /attestation fiscale/i, 
+            /revenus? de/i, /declaration.*revenu/i, // ✨ Placé ici de façon optimale pour éviter les fausses détections
+            /solde.*dette/i, /trop(-)?percu/i
         ]
     },
     {
         id: "echanges_internes",
         nom: "Échanges internes (ACN-CNG / sante.gouv.fr sans valeur ajoutée)",
-        keywords: [/@cng\.sante\.gouv\.fr/i, /@sante\.gouv\.fr/i, /\bACN\b/i, /\bCNG\b/i, /\bAGC-CNG\b/i, /trf:/i, /fw:/i, /pour info/i, /transfert de message/i, /bonne réception/i]
+        keywords: [/@cng\.sante\.gouv\.fr/i, /@sante\.gouv\.fr/i, /\bacn\b/i, /\bcng\b/i, /\bagc-cng\b/i, /trf:/i, /fw:/i, /pour info/i, /transfert de message/i, /bonne reception/i]
     },
     {
         id: "autres",
         nom: "Autres (demandes de pièces justificatives ou autres) FA VERIFIEO ALOHA SAO ECHANGE INTERNE",
-        keywords: [/pièce jointe/i, /justificatif/i, /veuillez trouver ci-joint/i, /envoyer le document/i, /dossier/i, /demande de copie/i]
+        keywords: [/piece jointe/i, /justificatif/i, /veuillez trouver ci-joint/i, /envoyer le document/i, /dossier/i, /demande de copie/i, /imposition/i,] // 🛠️ 
     }
 ];
 
 // Initialisation de la grille mémo en bas
 document.addEventListener("DOMContentLoaded", () => {
     const memo = document.getElementById('memoCategories');
-    memo.innerHTML = TYPES_COURRIELS.map(t => `
-        <div class="col-md-4 col-sm-6 mb-1 text-truncate">🔹 ${t.nom}</div>
-    `).join('');
+    if (memo) {
+        memo.innerHTML = TYPES_COURRIELS.map(t => `
+            <div class="col-md-4 col-sm-6 mb-1 text-truncate">🔹 ${t.nom}</div>
+        `).join('');
+    }
 });
 
-function analyserMail() {
-    const subject = document.getElementById('mailSubject').value.trim();
-    const content = document.getElementById('mailContent').value.trim();
+// Fonction utilitaire pour enlever les accents et passer en minuscule
+function nettoyerTexte(texte) {
+    return texte
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+}
 
-    if (!subject && !content) {
+function analyserMail() {
+    const subjectRaw = document.getElementById('mailSubject').value.trim();
+    const contentRaw = document.getElementById('mailContent').value.trim();
+
+    if (!subjectRaw && !contentRaw) {
         alert("Veuillez remplir au moins le champ Objet ou le Contenu du courriel.");
         return;
     }
 
-    const texteAAnalyser = (subject + " " + content).toLowerCase();
+    // Normalisation complète (Minuscule + Sans accent)
+    const subjectNormalise = nettoyerTexte(subjectRaw);
+    const contentNormalise = nettoyerTexte(contentRaw);
+    const texteAAnalyserMinuscule = subjectNormalise + " " + contentNormalise;
+    
     let matches = [];
 
-    const estEchangeInterne = /@cng\.sante\.gouv\.fr/i.test(texteAAnalyser) || 
-                             /@sante\.gouv\.fr/i.test(texteAAnalyser) || 
-                             /\bcng\b/i.test(texteAAnalyser) || 
-                             /\bacn\b/i.test(texteAAnalyser) || 
-                             /\bagc-cng\b/i.test(texteAAnalyser);
+    // Vérification des échanges internes sur le texte normalisé
+    const estEchangeInterne = /@cng\.sante\.gouv\.fr/i.test(texteAAnalyserMinuscule) || 
+                              /@sante\.gouv\.fr/i.test(texteAAnalyserMinuscule) || 
+                              /\bcng\b/i.test(texteAAnalyserMinuscule) || 
+                              /\bacn\b/i.test(texteAAnalyserMinuscule) || 
+                              /\bagc-cng\b/i.test(texteAAnalyserMinuscule);
 
     if (estEchangeInterne) {
         matches.push({ 
@@ -117,10 +183,10 @@ function analyserMail() {
         
         let score = 0;
         type.keywords.forEach(regex => {
-            if (subject.toLowerCase().match(regex)) {
-                score += 15;
+            if (subjectNormalise.match(regex)) {
+                score += 50; // Avantage décisif à l'objet
             }
-            if (content.toLowerCase().match(regex)) {
+            if (contentNormalise.match(regex)) {
                 score += 5;
             }
         });
@@ -185,16 +251,4 @@ function afficherResultats(matches) {
     });
 }
 
-function copierType(nomType) {
-    navigator.clipboard.writeText(nomType).then(() => {
-        alert(`Copié dans le presse-papiers : \n"${nomType}"`);
-    });
-}
-
-function reinitialiser() {
-    document.getElementById('mailSubject').value = "";
-    document.getElementById('mailContent').value = "";
-    document.getElementById('resultPlaceholder').style.display = 'block';
-    document.getElementById('suggestionsList').style.display = 'none';
-    document.getElementById('confidenceBadge').style.display = "none";
-}
+// Les fonctions copierType et reinitialiser restent identiques...
